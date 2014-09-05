@@ -1,0 +1,156 @@
+﻿<html>	
+
+    <title>SBTech Test</title>
+	 <script src="http://code.jquery.com/jquery-1.10.2.js" type="text/javascript"></script>
+    
+    <script type="text/javascript" language="javascript">
+	var edcSortDir=1;
+	var enameSortDir=1;
+	function printEvents(e){
+		for(var i = 1; i < e.length; i++) {
+			$("#eventsTable").find('tbody').append($('<tr>').append(
+				$('<td >').text(e[i].EventID),
+				$('<td >').text(e[i].EventName),
+				$('<td >').text(e[i].EventOddsDecimal)
+			));
+		}
+	}
+	var events=[{EventName:'',EventOddsDecimal:'',EventID:''}];
+
+	function sortByType(prop){
+	   return function(a,b){
+		  if( a[prop] > b[prop]){
+			  return enameSortDir;
+		  }else if( a[prop] < b[prop] ){
+			  return -1*enameSortDir;
+		  }
+		  return 0;
+	   }
+	}
+	
+		function sortByODD(prop){
+	   return function(a,b){
+		  if( parseFloat(a[prop]) > parseFloat(b[prop])){
+			  return edcSortDir;
+		  }else if( parseFloat(a[prop]) < parseFloat(b[prop])){
+			  return -1*edcSortDir;
+		  }
+		  return 0;
+	   }
+	}
+	
+	function sort(key){
+		$('#eventsTable tr').has('td').remove();
+		switch(key) {
+			case "ename":
+				events.sort(sortByType("EventName"));
+				printEvents(events);
+			enameSortDir=-1* enameSortDir;
+				break;
+			case "edec":
+				events.sort(sortByODD("EventOddsDecimal"));
+				printEvents(events);
+				edcSortDir=-1*edcSortDir;
+			
+			break;
+		}
+	} 
+		
+	
+   $(document).ready(function(){
+	   $.ajax({
+			type: "GET",
+			url: "race.xml",
+			dataType: "xml",
+			async: false,
+			success: function(xml){
+							
+				$("#RaceEventNumber").append($(xml).find('RaceEvent').attr("EventNumber"));
+				$("#RaceEventTime").append($(xml).find('RaceEvent').attr("EventTime"));
+				$("#RaceName").append($(xml).find('RaceEvent').attr("Name"));
+				$("#RaceFinishTime").append($(xml).find('RaceEvent').attr("FinishTime"));
+				$("#RaceDistance").append($(xml).find('RaceEvent').attr("Distance"));
+				
+				$("#eventsTable").find('tbody').append($('<tr>').append(
+					$('<th >').append($('<a >').text("Event ID")),
+					$('<th >').append($('<a href="javascript:sort(\'ename\')">').text("Event Name")),
+					$('<th >').append($('<a href="javascript:sort(\'edec\')">').text("Event Odds Decimal"))
+				));
+		
+			},
+			error: function() {
+			alert("An error occurred while processing XML file.");
+			}
+		});
+	});
+   
+   setInterval(function (){
+        $.ajax({
+            type: "GET",
+            url: "race.xml",
+            dataType: "xml",
+			async: false,
+            success: function(xml){
+							
+			/*	$("#RaceEventNumber").append($(xml).find('RaceEvent').attr("EventNumber"));
+				$("#RaceEventTime").append($(xml).find('RaceEvent').attr("EventTime"));
+				$("#RaceName").append($(xml).find('RaceEvent').attr("Name"));
+				$("#RaceFinishTime").append($(xml).find('RaceEvent').attr("FinishTime"));
+				$("#RaceDistance").append($(xml).find('RaceEvent').attr("Distance"));
+				
+				$("#eventsTable").find('tbody').append($('<tr>').append(
+					$('<th >').append($('<a >').text("Event ID")),
+					$('<th >').append($('<a href="javascript:sort(\'ename\')">').text("Event Name")),
+					$('<th >').append($('<a href="javascript:sort(\'edec\')">').text("Event Odds Decimal"))
+				));
+				*/
+					$('#eventsTable tr').has('td').remove();
+                $(xml).find('Entry').each(function(){
+					var eName = $(this).attr("Name");
+					
+					//eRows[0][eRows[0].length]=eName;
+					var eOddsDecimal = $(this).attr("OddsDecimal");
+					//eRows[1][eRows[1].length]=eOddsDecimal;
+					var eid=$(this).attr("ID");
+					//eRows[2][eRows[2].length]=eid;
+					events.push({EventName:eName,EventOddsDecimal:eOddsDecimal,EventID:eid});
+					$("#eventsTable").find('tbody').append($('<tr>').append(
+						$('<td >').text(eid),
+						$('<td >').text(eName),
+						$('<td >').text(eOddsDecimal)
+					));
+				});
+            },
+            error: function() {
+            alert("An error occurred while processing XML file.");
+            }
+        });
+    },1000);    
+</script>
+<style type="text/css">
+body
+{
+  font-family  : Arial;
+  font-size  : 10pt;
+}
+</style>
+</head>
+<body>
+   <div
+   <div  id="RaceName">Race Name: </div  >
+	<div id="RaceEventNumber" >Race Event Number: </div >
+	<div id="RaceEventTime">Race Event Time: </div >
+	<div id="RaceFinishTime">Race Finish Time: </div >
+	<div id="RaceDistance">Race Distance: </div >
+   
+    <table id="eventsTable" border="1">
+	
+	<tr>
+	
+	
+	 
+	</tr>
+	</table>
+       </div>
+</body>
+</html>
